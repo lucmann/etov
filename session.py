@@ -4,18 +4,34 @@
 import requests
 
 
-class HttpSession(object):
-    def __init__(self, host, proxies=None):
-        self.host = host
-        self.sess = requests.Session()
-        self.proxies = proxies
+class HttpSession:
+    sess = requests.Session()
+    host = ''
+    allowProxy = False
+    proxies = None
 
-        if self.proxies is None:
-            self.sess.trust_env = False
+        # if self.proxies is None:
+            # self.sess.trust_env = False
 
-    def post(self, url, body=None, headers=None):
+    @classmethod
+    def setHost(cls, host):
+        cls.host = host
+
+    @classmethod
+    def setProxies(cls, proxies=None):
+        if proxies is None:
+            cls.allowProxy = False
+            cls.sess.trust_env = False
+        else:
+            cls.allowProxy = True
+            cls.sess.trust_env = True
+
+        cls.proxies = proxies
+
+    @classmethod
+    def post(cls, url, body=None, headers=None):
         try:
-            return self.sess.post(self.host+url, json=body, headers=headers, proxies=self.proxies)
+            return cls.sess.post(cls.host+url, json=body, headers=headers, proxies=cls.proxies)
         except Exception as e:
             logger.exception(e)
 

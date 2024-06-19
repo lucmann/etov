@@ -5,24 +5,24 @@
 import base64
 import json
 import logging
-import requests
 import string
 import sys
 import time
 from ocr import Ocr
-from session import HttpSession
+from session import HttpSession as hs
 
 logger = logging.getLogger(__name__)
 
 
 class Vote(object):
     def __init__(self):
-        self.sess = HttpSession('http://4020140053056.vote.n.weimob.com', proxies={"proxies": "127.0.0.1:7890"})
         self.ocr = Ocr()
+        hs.setHost('http://4020140053056.vote.n.weimob.com')
+        hs.setProxies({"proxies": "127.0.0.1:7890"})
 
     def captcha(self, url, body, headers):
         try:
-            response = self.sess.post(url, headers=headers, body=body)
+            response = hs.post(url, headers=headers, body=body)
             if response.status_code != 200:
                 raise Exception('Failed to request captcha')
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                 "pid": "4020140053056",
                 "player": 449125,
                 "storeId": 0,
-                "openid": "oIwxACD44B-i3e9iw9nmUyFkHLVx",
+                "openid": "oIwxACDaaB-i3f98w9nmUywkHLVx",
                 "source": 0
             }
         },
@@ -115,15 +115,14 @@ if __name__ == '__main__':
 
         if len(captcha_str_list) == 1 and len(captcha_str_list[0]) == 4:
             reqs['checkCaptcha']['body']['inputCaptcha'] = "{}".format(captcha_str_list[0])
-            res = v.sess.post(reqs['checkCaptcha']['url'],
-                              reqs['checkCaptcha']['body'],
-                              headers).json()
+            res = hs.post(reqs['checkCaptcha']['url'],
+                          reqs['checkCaptcha']['body'],
+                          headers).json()
 
             print(res)
             if int(res['errcode']) == 0:
-                res = v.sess.post(reqs['vote']['url'],
-                                  reqs['vote']['body'], headers).json()
+                res = hs.post(reqs['vote']['url'],
+                              reqs['vote']['body'], headers).json()
                 print(res)
                 break
-
 
