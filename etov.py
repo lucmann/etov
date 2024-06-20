@@ -18,7 +18,7 @@ class Vote(object):
     def __init__(self):
         self.ocr = Ocr()
         hs.setHost('http://4020140053056.vote.n.weimob.com')
-        hs.setProxies({"proxies": "127.0.0.1:7890"})
+        hs.allowProxy(False)
 
     def captcha(self, url, body, headers):
         try:
