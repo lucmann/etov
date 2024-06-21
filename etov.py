@@ -79,7 +79,7 @@ if __name__ == '__main__':
                 "pid": "4020140053056",
                 "player": 449125,
                 "storeId": 0,
-                "openid": "oIwxACDaaB-i3f98w9nmUywkHLVx",
+                "openid": "oIwxACFucK-i3f18w9nmUSakHLVx",
                 "source": 0
             }
         },
