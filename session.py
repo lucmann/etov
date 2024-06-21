@@ -6,6 +6,7 @@ import logging
 import re
 import requests
 from random import choice
+from retry import retry
 
 logger = logging.getLogger(__name__)
 DEFAULT_PROXY = {"http": "127.0.0.1:7890"}
@@ -49,6 +50,7 @@ class HttpSession:
             cls.proxies = proxies
 
     @classmethod
+    @retry(tries=600, delay=1)
     def get(cls, url, body=None, headers=None):
         try:
             return cls.sess.get(cls.host+url, json=body, headers=headers, verify=False)
@@ -56,13 +58,18 @@ class HttpSession:
             logger.exception(e)
 
     @classmethod
+    @retry(tries=600, delay=1)
     def post(cls, url, body=None, headers=None):
         try:
-            return cls.sess.post(cls.host+url, json=body, headers=headers, proxies=cls.this_proxy)
+            r = cls.sess.post(cls.host+url, json=body, headers=headers, proxies=cls.this_proxy,
+                              timeout=10)
+            if r.status_code != 200:
+                raise requests.exceptions.RequestException()
+
+            return r
         except requests.exceptions.RequestException:
             # Pick another proxy and try again
             cls.this_proxy = choice(cls.proxies)
-            cls.post(url, body, headers)
         except Exception as e:
             logger.exception(e)
 
@@ -88,7 +95,7 @@ class HttpSession:
             for p in _proxies:
                 logger.info(p)
 
-            return [{"http": "{}".format(p)} for p in _proxies]
+            return [{"http": "{}".format(p), "https": "{}".format(p)} for p in _proxies]
 
         except Exception as e:
             logger.exception(e)

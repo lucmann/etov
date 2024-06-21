@@ -9,6 +9,7 @@ import string
 import sys
 import time
 from ocr import Ocr
+from retry import retry
 from session import HttpSession as hs
 
 logger = logging.getLogger(__name__)
@@ -20,23 +21,17 @@ class Vote(object):
         hs.setHost('http://4020140053056.vote.n.weimob.com')
         hs.allowProxy(True)
 
+    @retry(tries=600, delay=1)
     def captcha(self, url, body, headers):
-        try:
-            response = hs.post(url, headers=headers, body=body)
-            if response.status_code != 200:
-                raise Exception('Failed to request captcha')
+        response = hs.post(url, headers=headers, body=body)
+        response_body = response.json()
 
-            response_body = response.json()
-            # logger.info(response_body)
+        if int(response_body['errcode']) != 0:
+            raise Exception('Failed to get captcha')
 
-            if int(response_body['errcode']) != 0:
-                raise Exception('Failed to get captcha')
-
-            return self.ocr.read_digit_image(base64.b64decode(
-                bytes(response_body['data'], 'utf-8')
-            ))
-        except Exception as e:
-            logger.exception(e)
+        return self.ocr.read_digit_image(base64.b64decode(
+            bytes(response_body['data'], 'utf-8')
+        ))
 
 
 if __name__ == '__main__':
