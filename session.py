@@ -51,7 +51,7 @@ class HttpSession:
     @classmethod
     def get(cls, url, body=None, headers=None):
         try:
-            return cls.sess.get(cls.host+url, json=body, headers=headers)
+            return cls.sess.get(cls.host+url, json=body, headers=headers, verify=False)
         except Exception as e:
             logger.exception(e)
 
