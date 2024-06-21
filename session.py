@@ -8,12 +8,14 @@ import requests
 from random import choice
 
 logger = logging.getLogger(__name__)
+DEFAULT_PROXY = {"http": "127.0.0.1:7890"}
 
 class HttpSession:
     sess = requests.Session()
     host = ''
     allowProxy = False
     proxies = []
+    this_proxy = None
 
     @classmethod
     def setHost(cls, host):
@@ -29,8 +31,11 @@ class HttpSession:
             # If users provide no proxies at all, we handle it by ourselves
             if len(cls.proxies) == 0:
                 cls.proxies = cls.getProxies()
+
+            # A session uses the same proxy at a time
+            cls.this_proxy = choice(cls.proxies)
         else:
-            cls.proxies = [{"proxies": "127.0.0.1:7890"}]
+            cls.proxies = [DEFAULT_PROXY]
 
     @classmethod
     def setProxies(cls, proxies=None):
@@ -53,7 +58,11 @@ class HttpSession:
     @classmethod
     def post(cls, url, body=None, headers=None):
         try:
-            return cls.sess.post(cls.host+url, json=body, headers=headers, proxies=choice(cls.proxies))
+            return cls.sess.post(cls.host+url, json=body, headers=headers, proxies=cls.this_proxy)
+        except requests.exceptions.RequestException:
+            # Pick another proxy and try again
+            cls.this_proxy = choice(cls.proxies)
+            cls.post(url, body, headers)
         except Exception as e:
             logger.exception(e)
 
@@ -68,7 +77,6 @@ class HttpSession:
         try:
             response = cls.get('/', headers=headers)
             parsed = bs4.BeautifulSoup(response.text, 'html.parser')
-            print(parsed)
             data = parsed.table.find_all('td')
             _ip = re.compile(r'<td>(\d+\.\d+\.\d+\.\d+)</td>')
             _port = re.compile(r'<td>(\d+)</td>')
@@ -76,7 +84,12 @@ class HttpSession:
             _ips = re.findall(_ip, str(data))
             _ports = re.findall(_port, str(data))
 
-            return [{"http": "{}".format(':'.join(_))} for _ in zip(_ips, _ports)]
+            _proxies = [':'.join(_) for _ in zip(_ips, _ports)]
+            for p in _proxies:
+                logger.info(p)
+
+            return [{"http": "{}".format(p)} for p in _proxies]
+
         except Exception as e:
             logger.exception(e)
             return [{"http": "127.0.0.1:7890"}]
