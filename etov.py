@@ -20,6 +20,7 @@ class Vote(object):
         self.ocr = Ocr()
         hs.setHost('http://4020140053056.vote.n.weimob.com')
         hs.allowProxy(True)
+        self.userAgent = hs.getUserAgent()
 
     @retry(tries=600, delay=1)
     def captcha(self, url, body, headers):
@@ -45,7 +46,7 @@ if __name__ == '__main__':
         "Host": "4020140053056.vote.n.weimob.com",
         "Content-Type": "application/json",
         "Connection": "Keep-Alive",
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko",
+        "User-Agent": "{}".format(v.userAgent),
         "x-tp-signature": "111feaa914b290de0d480635d3e5a16c80c5231a",
         "x-tp-uuid": "112c9a9e9f7d31b55c8cc723e7bc7bb5dbef30fe",
         "Accept": "*/*",
@@ -59,7 +60,7 @@ if __name__ == '__main__':
         "Host": "4020140053056.vote.n.weimob.com",
         "Content-Type": "application/json",
         "Connection": "Keep-Alive",
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko",
+        "User-Agent": "{}".format(v.userAgent),
         "x-tp-signature": "111febab14b290de0d490635d3e5a16c80c5231a",
         "x-tp-uuid": "112c9a9e9e1d31b55c8cc723f6bc7bb5dbef30fe",
         "Accept": "*/*",

@@ -10,6 +10,9 @@ from retry import retry
 
 logger = logging.getLogger(__name__)
 DEFAULT_PROXY = {"http": "127.0.0.1:7890"}
+USER_AGENT_POOL = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090b11) XWEB/9165 Flue'
+]
 
 class HttpSession:
     sess = requests.Session()
@@ -72,6 +75,10 @@ class HttpSession:
             cls.this_proxy = choice(cls.proxies)
         except Exception as e:
             logger.exception(e)
+
+    @classmethod
+    def getUserAgent(cls):
+        return choice(USER_AGENT_POOL)
 
     @classmethod
     def getProxies(cls):
